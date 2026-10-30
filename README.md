@@ -1,16 +1,23 @@
-# React + Vite
+# Pocket Ledger Expense Tracker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Development
 
-Currently, two official plugins are available:
+```sh
+npm install
+npm run dev
+```
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+The expense page supports adding, filtering, and deleting expenses. Amounts must
+be greater than zero and no more than ₹100,000.
 
-## React Compiler
+## Validation
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```sh
+npm run lint
+npm run build
+npx vitest run
+npx vitest run --coverage
+```
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+To run the Cypress end-to-end tests, start the Vite server with `npm run dev`,
+then run `npm run cy:run`. Use `npm run cy:open` to open the Cypress UI.
