@@ -1,4 +1,6 @@
 import { EXPENSE_CATEGORIES } from '../utils/expenses'
+import RunningTotal from './RunningTotal'
+import VisibleExpenseCount from './VisibleExpenseCount'
 
 // Props provide the filtered expenses, display values, filter state, and delete callback.
 function ExpenseList({
@@ -32,9 +34,7 @@ function ExpenseList({
               ))}
             </select>
           </label>
-          <span className="entry-count" data-cy="count" data-testid="count">
-            {expenses.length} {expenses.length === 1 ? 'item' : 'items'}
-          </span>
+          <VisibleExpenseCount count={expenses.length} />
         </div>
       </div>
 
@@ -89,12 +89,7 @@ function ExpenseList({
         </ul>
       )}
 
-      <div className="total-row">
-        <span>Total expenses</span>
-        <strong data-cy="total" data-testid="total">
-          {formatCurrency(total)}
-        </strong>
-      </div>
+      <RunningTotal total={total} formatCurrency={formatCurrency} />
     </div>
   )
 }
