@@ -1,4 +1,5 @@
-import { EXPENSE_CATEGORIES } from '../utils/expenses'
+import CategoryFilter from './CategoryFilter'
+import DeleteExpenseButton from './DeleteExpenseButton'
 
 // Props provide the filtered expenses, display values, filter state, and delete callback.
 function ExpenseList({
@@ -18,20 +19,10 @@ function ExpenseList({
           <h2>Recent expenses</h2>
         </div>
         <div className="list-controls">
-          <label className="category-filter">
-            Filter
-            <select
-              aria-label="Filter expenses by category"
-              data-cy="filter"
-              value={selectedCategory}
-              onChange={(event) => onCategoryChange(event.target.value)}
-            >
-              <option>All</option>
-              {EXPENSE_CATEGORIES.map((category) => (
-                <option key={category}>{category}</option>
-              ))}
-            </select>
-          </label>
+          <CategoryFilter
+            selectedCategory={selectedCategory}
+            onCategoryChange={onCategoryChange}
+          />
           <span className="entry-count" data-cy="count" data-testid="count">
             {expenses.length} {expenses.length === 1 ? 'item' : 'items'}
           </span>
@@ -75,15 +66,10 @@ function ExpenseList({
               <strong className="expense-amount">
                 {formatCurrency(expense.amount)}
               </strong>
-              <button
-                className="delete-expense"
-                type="button"
-                aria-label={`Delete ${expense.description}`}
-                data-cy="delete-expense"
+              <DeleteExpenseButton
+                description={expense.description}
                 onClick={() => onDeleteExpense(expense.id)}
-              >
-                ×
-              </button>
+              />
             </li>
           ))}
         </ul>

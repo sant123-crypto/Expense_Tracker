@@ -1,92 +1,74 @@
 import { useState } from 'react'
 import { EXPENSE_CATEGORIES, validateExpense } from '../utils/expenses'
 
-function getToday() {
-  const today = new Date()
-  const localDate = new Date(today.getTime() - today.getTimezoneOffset() * 60000)
-  return localDate.toISOString().slice(0, 10)
-}
-
-// Props provide the add callback; local state controls the form fields and validation feedback.
-function ExpenseListForm({ onAddExpense }) {
+function ExpenseListForm({ onAddExpense, onError }) {
   const [description, setDescription] = useState('')
   const [amount, setAmount] = useState('')
-  const [category, setCategory] = useState('Food')
-  const [date, setDate] = useState(getToday)
-  const [error, setError] = useState('')
+  const [category, setCategory] = useState(EXPENSE_CATEGORIES[0])
 
   const handleSubmit = (event) => {
     event.preventDefault()
-    const parsedAmount = Number(amount)
-    const validationError = validateExpense({ description, amount: parsedAmount })
-    if (validationError) {
-      setError(validationError)
+    const expense = {
+      description,
+      amount: Number(amount),
+      category,
+      date: new Date().toISOString().slice(0, 10),
+    }
+    const validationMessage = validateExpense(expense)
+
+    if (validationMessage) {
+      onError(validationMessage)
       return
     }
 
-    setError('')
-    onAddExpense({
-      description: description.trim(),
-      amount: parsedAmount,
-      category,
-      date,
-    })
+    onAddExpense(expense)
     setDescription('')
     setAmount('')
   }
 
   return (
-    <section className="form-card">
+    <form className="expense-form-card" onSubmit={handleSubmit}>
       <div className="form-heading">
-        <span className="form-icon" aria-hidden="true">＋</span>
-        <div>
-          <p className="eyebrow">NEW ENTRY</p>
-          <h2>Add an expense</h2>
-        </div>
+        <p className="eyebrow">NEW ENTRY</p>
+        <h2>Add an expense</h2>
       </div>
 
-      <form className="expense-form" onSubmit={handleSubmit} noValidate>
-        <label className="form-field form-field-wide">
-          <span>What was it for?</span>
+      <div className="form-fields">
+        <label className="form-field form-field-description">
+          What was it for?
           <input
             type="text"
-            data-cy="title"
             value={description}
-            onChange={(event) => {
-              setDescription(event.target.value)
-              setError('')
-            }}
+            onChange={(event) => setDescription(event.target.value)}
             placeholder="e.g. Lunch with friends"
-            maxLength={80}
+            aria-label="What was it for?"
+            data-cy="title"
           />
         </label>
 
         <label className="form-field">
-          <span>Amount</span>
-          <div className="amount-input">
+          Amount
+          <span className="amount-input">
             <span aria-hidden="true">₹</span>
             <input
               type="number"
-              data-cy="amount"
-              value={amount}
-              onChange={(event) => {
-                setAmount(event.target.value)
-                setError('')
-              }}
-              placeholder="0.00"
-              min="0.01"
-              max="100000"
               step="0.01"
+              value={amount}
+              onChange={(event) => setAmount(event.target.value)}
+              placeholder="0.00"
+              aria-label="Amount"
+              data-cy="amount"
             />
-          </div>
+          </span>
         </label>
 
         <label className="form-field">
-          <span>Category</span>
+          Category
           <select
-            data-cy="category"
             value={category}
             onChange={(event) => setCategory(event.target.value)}
+            aria-label="Category"
+            data-cy="category"
           >
             {EXPENSE_CATEGORIES.map((expenseCategory) => (
               <option key={expenseCategory}>{expenseCategory}</option>
@@ -94,27 +76,11 @@ function ExpenseListForm({ onAddExpense }) {
           </select>
         </label>
 
-        <label className="form-field form-field-wide">
-          <span>Date</span>
-          <input
-            type="date"
-            value={date}
-            onChange={(event) => setDate(event.target.value)}
-          />
-        </label>
-
-        {error && <p className="form-error" role="alert">{error}</p>}
-
-        <button
-          className="button button-primary form-submit"
-          data-cy="add-expense"
-          type="submit"
-        >
-          Add expense <span aria-hidden="true">→</span>
+        <button className="primary-button form-submit" type="submit" data-cy="add-expense">
+          Add expense
         </button>
-      </form>
-      <p className="form-footnote">Your expense details stay in this session.</p>
-    </section>
+      </div>
+    </form>
   )
 }
 
