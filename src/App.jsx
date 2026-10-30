@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import ExpenseListForm from './components/ExpenseListForm'
+import ExpenseList from './components/ExpenseList'
+import { calculateTotal, filterExpenses } from './utils/expenses'
 import './App.css'
 
 const currency = new Intl.NumberFormat('en-IN', {
@@ -11,8 +13,11 @@ const currency = new Intl.NumberFormat('en-IN', {
 function App() {
   const [page, setPage] = useState('home')
   const [expenses, setExpenses] = useState([])
+  const [selectedCategory, setSelectedCategory] = useState('All')
 
-  const total = expenses.reduce((sum, expense) => sum + expense.amount, 0)
+  const total = calculateTotal(expenses)
+  const visibleExpenses = filterExpenses(expenses, selectedCategory)
+  const visibleTotal = calculateTotal(visibleExpenses)
 
   const handleAddExpense = (expense) => {
     setExpenses((currentExpenses) => [
@@ -58,65 +63,15 @@ function App() {
 
         <section className="expense-layout" aria-label="Manage expenses">
           <ExpenseListForm onAddExpense={handleAddExpense} />
-
-          <div className="expense-list-card">
-            <div className="list-heading">
-              <div>
-                <p className="eyebrow">YOUR ENTRIES</p>
-                <h2>Recent expenses</h2>
-              </div>
-              <span className="entry-count">
-                {expenses.length} {expenses.length === 1 ? 'item' : 'items'}
-              </span>
-            </div>
-
-            {expenses.length === 0 ? (
-              <div className="empty-state">
-                <span className="empty-icon" aria-hidden="true">＋</span>
-                <h3>No expenses yet</h3>
-                <p>Add your first expense using the form.</p>
-              </div>
-            ) : (
-              <ul className="expense-list">
-                {expenses.map((expense) => (
-                  <li className="expense-item" key={expense.id}>
-                    <span className="expense-icon" aria-hidden="true">
-                      {expense.category === 'Food' ? '🍽' :
-                        expense.category === 'Transport' ? '↗' :
-                          expense.category === 'Bills' ? '⌂' :
-                            expense.category === 'Shopping' ? '▣' : '•'}
-                    </span>
-                    <div className="expense-info">
-                      <strong>{expense.description}</strong>
-                      <span>
-                        {expense.category} <span aria-hidden="true">·</span>{' '}
-                        {new Date(`${expense.date}T00:00:00`).toLocaleDateString(
-                          'en-IN',
-                          { day: 'numeric', month: 'short', year: 'numeric' }
-                        )}
-                      </span>
-                    </div>
-                    <strong className="expense-amount">
-                      {currency.format(expense.amount)}
-                    </strong>
-                    <button
-                      className="delete-expense"
-                      type="button"
-                      aria-label={`Delete ${expense.description}`}
-                      onClick={() => handleDeleteExpense(expense.id)}
-                    >
-                      ×
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            <div className="total-row">
-              <span>Total expenses</span>
-              <strong>{currency.format(total)}</strong>
-            </div>
-          </div>
+          <ExpenseList
+            expenses={visibleExpenses}
+            total={visibleTotal}
+            formatCurrency={(amount) => currency.format(amount)}
+            onDeleteExpense={handleDeleteExpense}
+            hasExpenses={expenses.length > 0}
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+          />
         </section>
       </main>
     )

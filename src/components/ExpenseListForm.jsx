@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { EXPENSE_CATEGORIES, validateExpense } from '../utils/expenses'
 
 function getToday() {
   const today = new Date()
@@ -6,20 +7,24 @@ function getToday() {
   return localDate.toISOString().slice(0, 10)
 }
 
+// Props provide the add callback; local state controls the form fields and validation feedback.
 function ExpenseListForm({ onAddExpense }) {
   const [description, setDescription] = useState('')
   const [amount, setAmount] = useState('')
   const [category, setCategory] = useState('Food')
   const [date, setDate] = useState(getToday)
+  const [error, setError] = useState('')
 
   const handleSubmit = (event) => {
     event.preventDefault()
     const parsedAmount = Number(amount)
-
-    if (!description.trim() || !Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+    const validationError = validateExpense({ description, amount: parsedAmount })
+    if (validationError) {
+      setError(validationError)
       return
     }
 
+    setError('')
     onAddExpense({
       description: description.trim(),
       amount: parsedAmount,
@@ -40,16 +45,19 @@ function ExpenseListForm({ onAddExpense }) {
         </div>
       </div>
 
-      <form className="expense-form" onSubmit={handleSubmit}>
+      <form className="expense-form" onSubmit={handleSubmit} noValidate>
         <label className="form-field form-field-wide">
           <span>What was it for?</span>
           <input
             type="text"
+            data-cy="title"
             value={description}
-            onChange={(event) => setDescription(event.target.value)}
+            onChange={(event) => {
+              setDescription(event.target.value)
+              setError('')
+            }}
             placeholder="e.g. Lunch with friends"
             maxLength={80}
-            required
           />
         </label>
 
@@ -59,12 +67,16 @@ function ExpenseListForm({ onAddExpense }) {
             <span aria-hidden="true">₹</span>
             <input
               type="number"
+              data-cy="amount"
               value={amount}
-              onChange={(event) => setAmount(event.target.value)}
+              onChange={(event) => {
+                setAmount(event.target.value)
+                setError('')
+              }}
               placeholder="0.00"
               min="0.01"
+              max="100000"
               step="0.01"
-              required
             />
           </div>
         </label>
@@ -72,14 +84,13 @@ function ExpenseListForm({ onAddExpense }) {
         <label className="form-field">
           <span>Category</span>
           <select
+            data-cy="category"
             value={category}
             onChange={(event) => setCategory(event.target.value)}
           >
-            <option>Food</option>
-            <option>Transport</option>
-            <option>Bills</option>
-            <option>Shopping</option>
-            <option>Other</option>
+            {EXPENSE_CATEGORIES.map((expenseCategory) => (
+              <option key={expenseCategory}>{expenseCategory}</option>
+            ))}
           </select>
         </label>
 
@@ -89,11 +100,16 @@ function ExpenseListForm({ onAddExpense }) {
             type="date"
             value={date}
             onChange={(event) => setDate(event.target.value)}
-            required
           />
         </label>
 
-        <button className="button button-primary form-submit" type="submit">
+        {error && <p className="form-error" role="alert">{error}</p>}
+
+        <button
+          className="button button-primary form-submit"
+          data-cy="add-expense"
+          type="submit"
+        >
           Add expense <span aria-hidden="true">→</span>
         </button>
       </form>
